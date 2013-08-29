@@ -10,7 +10,7 @@ http://www.linuxjournal.com/content/tech-tip-really-simple-http-server-python
 
 import sys
 import string, cgi, time
-from os import sep
+from os import sep, path
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import ssl
 from threading import Thread
@@ -183,11 +183,13 @@ def Run(cmdPipe, param):
     try:
         server_ssl = ThreadingHTTPServer((cfg_IP_WebServer,int(cfg_Port_SSL)), MyHandler)
         certfile = param['CSettings'].getSetting('certfile')
+        if not path.exists(certfile):
+            raise IOError('certfile not found. Path incorrect?')
         server_ssl.socket = ssl.wrap_socket(server_ssl.socket, certfile=certfile, server_side=True)
         server_ssl.timeout = 1
         thread_ssl = Thread(target=server_ssl.serve_forever).start()
-    except:
-        dprint(__name__, 0, "Failed to connect to HTTPS on {0} port {1}: {2}", cfg_IP_WebServer, cfg_Port_ssl, e)
+    except Exception, e:
+        dprint(__name__, 0, "Failed to connect to HTTPS on {0} port {1}: {2}", cfg_IP_WebServer, cfg_Port_SSL, e)
         server.shutdown()
         sys.exit(1)
 
